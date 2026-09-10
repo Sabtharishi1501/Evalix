@@ -63,6 +63,7 @@ Evalix/
 │   ├── test_scoring.py                 # Unit tests for scoring.py
 │   ├── test_ai_insight.py                # Unit tests for the provider chain (mocked)
 │   └── test_routes.py                      # Integration tests via Flask's test client
+    └── test_questions.py
 ├── app.py                                    # Dev entry point (python app.py)
 ├── requirements.txt
 ├── .env.example
