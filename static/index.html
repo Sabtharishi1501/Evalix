@@ -20,13 +20,20 @@
     <!-- QUIZ VIEW -->
     <section id="quiz-view">
       <form id="quiz-form" novalidate>
+        <p id="section-progress" class="section-progress"></p>
+
         <div id="question-groups">
-          <!-- populated by app.js -->
+          <!-- populated by app.js: only the CURRENT section's category is
+               rendered here at any given time -->
         </div>
 
         <div class="submit-row">
-          <p id="progress-note" class="progress-note">0 of 8 answered</p>
-          <button type="submit" id="submit-btn" class="btn" disabled>See my results</button>
+          <p id="progress-note" class="progress-note">0 of 4 answered</p>
+          <div class="submit-row__actions">
+            <button type="button" id="back-btn" class="btn btn--quiet hidden">Back</button>
+            <button type="button" id="next-btn" class="btn" disabled>Next</button>
+            <button type="submit" id="submit-btn" class="btn hidden" disabled>See my results</button>
+          </div>
         </div>
       </form>
     </section>

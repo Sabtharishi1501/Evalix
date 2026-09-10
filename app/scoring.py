@@ -11,6 +11,29 @@ from collections import defaultdict
 MIN_SCALE = 1
 MAX_SCALE = 5
 
+# Score-tier thresholds, independent of how the two categories compare to
+# each other. A 3.5 in one category is "Average" whether the other category
+# scored 2.0 or 4.5 -- the tier describes the score on its own terms.
+TIER_STRONG = "Strong"
+TIER_AVERAGE = "Average"
+TIER_NEEDS_IMPROVEMENT = "Needs Improvement"
+
+STRONG_THRESHOLD = 4.0  # score >= this -> Strong
+AVERAGE_THRESHOLD = 3.0  # this <= score < STRONG_THRESHOLD -> Average
+# score < AVERAGE_THRESHOLD -> Needs Improvement
+
+
+def classify_tier(score):
+    """
+    Return one of TIER_STRONG / TIER_AVERAGE / TIER_NEEDS_IMPROVEMENT for a
+    single category's average score (1-5 scale).
+    """
+    if score >= STRONG_THRESHOLD:
+        return TIER_STRONG
+    if score >= AVERAGE_THRESHOLD:
+        return TIER_AVERAGE
+    return TIER_NEEDS_IMPROVEMENT
+
 
 def validate_answers(answers, questions):
     """
@@ -64,6 +87,14 @@ def calculate_scores(answers, questions):
         for category in sums
         if counts[category] > 0
     }
+
+
+def calculate_tiers(category_scores):
+    """
+    Return {category: tier_label} for every category in category_scores,
+    using classify_tier() on each category's average independently.
+    """
+    return {category: classify_tier(score) for category, score in category_scores.items()}
 
 
 def stronger_weaker_category(category_scores):

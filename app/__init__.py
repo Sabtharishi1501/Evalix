@@ -1,6 +1,10 @@
 import logging
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from flask import Flask, jsonify, request, send_from_directory
 
 from .config import get_config

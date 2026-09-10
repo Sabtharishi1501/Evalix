@@ -52,6 +52,17 @@ body {
   max-width: 46ch;
 }
 
+/* ---------- Section progress (Section X of Y) ---------- */
+
+.section-progress {
+  margin: 0 0 1.25rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+}
+
 /* ---------- Question groups ---------- */
 
 .category {
@@ -135,7 +146,7 @@ body {
   color: var(--ink-soft);
 }
 
-/* ---------- Submit ---------- */
+/* ---------- Submit row / section navigation ---------- */
 
 .submit-row {
   display: flex;
@@ -143,6 +154,13 @@ body {
   justify-content: space-between;
   gap: 1rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.submit-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .progress-note {
@@ -178,10 +196,13 @@ body {
   background: transparent;
   color: var(--pine);
   border: 1px solid var(--line);
-  margin-top: 2.5rem;
 }
 
 .btn--quiet:hover { border-color: var(--pine); background: transparent; }
+
+#retake-btn.btn--quiet {
+  margin-top: 2.5rem;
+}
 
 /* ---------- Results ---------- */
 
@@ -253,4 +274,7 @@ body {
   .masthead__title { font-size: 1.7rem; }
   .scale { gap: 0.35rem; }
   .scale__box { font-size: 0.7rem; height: 2.2rem; }
+  .submit-row { flex-direction: column; align-items: stretch; }
+  .submit-row__actions { justify-content: stretch; }
+  .submit-row__actions .btn { flex: 1; }
 }
