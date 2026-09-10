@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evalix — Self-Assessment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="page">
+
+    <header class="masthead">
+      <p class="masthead__label">Evalix</p>
+      <h1 class="masthead__title">A short look at how you work</h1>
+      <p class="masthead__sub">Eight statements, answered honestly, on a scale from Strongly Disagree to Strongly Agree.</p>
+    </header>
+
+    <!-- QUIZ VIEW -->
+    <section id="quiz-view">
+      <form id="quiz-form" novalidate>
+        <div id="question-groups">
+          <!-- populated by app.js -->
+        </div>
+
+        <div class="submit-row">
+          <p id="progress-note" class="progress-note">0 of 8 answered</p>
+          <button type="submit" id="submit-btn" class="btn" disabled>See my results</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- RESULTS VIEW -->
+    <section id="results-view" class="hidden">
+      <div id="score-summary"></div>
+
+      <div id="insight-block" class="insight">
+        <p class="insight__eyebrow">What this suggests</p>
+        <p id="insight-stronger" class="insight__line"></p>
+        <p id="insight-suggestion" class="insight__line"></p>
+        <p id="insight-mode-note" class="insight__note hidden"></p>
+      </div>
+
+      <button type="button" id="retake-btn" class="btn btn--quiet">Retake the quiz</button>
+    </section>
+
+    <p id="error-banner" class="error-banner hidden" role="alert"></p>
+
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
