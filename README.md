@@ -1,12 +1,11 @@
 # Evalix
 
 A short, two-category self-assessment quiz that scores your answers and uses
-an AI provider to generate one honest, specific insight: which category you're
-stronger in, and one concrete way to improve the weaker one.
+an AI provider to generate one honest, specific insight: which category
+you're stronger in, and one concrete way to improve the weaker one.
 
-Built with Flask (app-factory pattern), a Gemini → Groq → mocked-response
-provider chain for the AI call, and a static (no build step) HTML/CSS/JS
-frontend.
+This README follows the structure of the assignment brief directly, so each
+section below maps to Part 1 / Part 2 / Part 3 as given.
 
 ---
 
@@ -30,14 +29,11 @@ copy .env.example .env       # Windows
 cp .env.example .env         # macOS/Linux
 # Edit .env and add a GEMINI_API_KEY and/or GROQ_API_KEY if you have one.
 # If you leave both blank, the app still runs — it returns a clearly
-# labeled [MOCKED] insight instead of calling a real AI API.
+# labeled [MOCKED] insight instead of calling a real AI API (see Part 2).
 
 # 5. Run the dev server
 python app.py
 # -> http://localhost:5000
-
-# 6. Run the tests
-pytest -v
 ```
 
 ---
@@ -52,18 +48,14 @@ Evalix/
 │   ├── config.py           # Dev/Testing/Production config classes
 │   ├── questions.py        # The 8 questions + 2 categories (single source of truth)
 │   ├── scoring.py           # Pure functions: validate answers, average per
-│   │                          category, determine stronger/weaker category
+│   │                          category, classify each category into a tier,
+│   │                          determine stronger/weaker category
 │   ├── ai_insight.py         # Prompt construction + Gemini/Groq/mock provider chain
 │   └── routes.py              # GET /api/questions, POST /api/submit
 ├── static/
 │   ├── index.html               # Single page: sectioned quiz view + results view
 │   ├── app.js                     # Fetches questions, tracks answers per section, renders results
 │   └── style.css                    # Styling
-├── tests/
-│   ├── test_scoring.py                 # Unit tests for scoring.py
-│   ├── test_ai_insight.py                # Unit tests for the provider chain (mocked)
-│   └── test_routes.py                      # Integration tests via Flask's test client
-    └── test_questions.py
 ├── app.py                                    # Dev entry point (python app.py)
 ├── requirements.txt
 ├── .env.example
@@ -72,43 +64,65 @@ Evalix/
 
 ---
 
-## How it works
+## Part 1 — The Quiz
 
-**Quiz (Part 1).** `app/questions.py` defines 8 questions split evenly across
-two categories, Communication and Problem-Solving. The frontend fetches this
-from `GET /api/questions` (so the question data lives in exactly one place —
-the frontend never hardcodes questions) and renders it as a short, sectioned
-flow: one category's 4 questions per screen, with a "Section X of Y" label.
-The Next button for a section stays disabled until every question in that
-section is answered; the final section shows a Submit button instead of
-Next. Answers accumulate across sections in `app.js`'s `state.answers` as
-the person moves through the quiz, so by the time they reach Submit on the
-last section, the full answer set for all categories is ready to send. On
-submit, `POST /api/submit` validates the answers, averages each category
-with `scoring.calculate_scores`, and returns both the scores and the AI
-insight in one response.
+`app/questions.py` defines 8 questions split evenly across two categories,
+**Communication** and **Problem-Solving**, each answered on a 1–5 scale
+(Strongly Disagree → Strongly Agree). The frontend fetches these from
+`GET /api/questions` — the question data lives in exactly one place, and the
+frontend never hardcodes questions.
 
-**AI insight (Part 2).** `app/ai_insight.py` builds a prompt from the category
-averages *and* every individual question/answer pair — not just the two
-averages — so the model has something concrete to point to instead of
-inventing generic advice. Each category's average is also classified into a
-tier (Strong / Average / Needs Improvement, via `scoring.classify_tier`) so
-the model judges each category on its own standing, not only on the gap
-between the two — a solid 4.2 shouldn't get flagged as "needing work" just
-because the other category scored higher. The system prompt requires strict
-JSON output, forbids phrases like "practice more," and forbids writing the
-literal tier label words in the output (the tier only shapes tone/severity,
-never appears verbatim). The call chain is:
+**A deliberate departure from the literal spec, worth flagging directly:**
+the brief describes one page with all 8 questions and a Submit button
+disabled until all 8 are answered. I instead built a **sectioned flow** —
+one category's 4 questions per screen, with a "Section X of Y" label and a
+Next button. The Next button for a section is disabled until that section's
+4 questions are answered; the final section shows Submit instead of Next,
+and Submit stays disabled until that section is complete too. The *effect*
+is identical to what's asked (you cannot submit until all 8 questions have
+been answered), but the mechanism is paginated rather than a single long
+scroll. I made this choice because it's a more realistic layout for an
+8-question, 2-category self-assessment and I think it reads better on
+mobile widths, but it is a change from the literal description, not a
+literal implementation of it, so I want that visible rather than glossed
+over.
 
-1. **Gemini**, if `GEMINI_API_KEY` is set.
-2. **Groq**, if Gemini's key is missing, the call fails for any reason
-   (network, auth, quota), or the response is truncated by the output token
-   limit.
-3. A **deterministic mocked response**, clearly labeled `[MOCKED]` both in
-   the JSON payload and in the UI, if neither provider is configured or both
-   fail. This means the app always returns a usable result and the real
-   integration path (prompt building, request shape, response parsing) is
-   exercised and tested even without live credentials.
+Answers accumulate across sections in `app.js`'s `state.answers` as the
+person moves through the quiz, so by the time they reach Submit on the last
+section, the full 8-answer set is ready to send. On submit, `POST
+/api/submit` validates the answers, averages each category with
+`scoring.calculate_scores`, and returns both the scores (e.g.,
+"Communication: 3.75 / 5") and the AI insight in one response, displayed in
+the results view.
+
+**Another departure, also worth flagging directly:** the brief explicitly
+says no backend is required and local state/local storage is sufficient. I
+built a real Flask backend anyway. The reason is Part 2 — calling a real AI
+provider from the browser directly would mean shipping the Gemini/Groq API
+key in client-side JavaScript, visible to anyone who opens dev tools. Since
+the brief also asks for "a real request shape" and "the integration logic,"
+I judged that a working, key-safe integration was more useful to demonstrate
+than a client-only version that could not safely call a real provider. The
+backend is minimal on purpose: two routes, no database, no auth, session
+state only to remember which 8 (randomly-sampled, from a pool of 16) questions
+were shown to this browser, so `/api/submit` can validate answers against
+exactly what was actually asked.
+
+---
+
+## Part 2 — AI-Generated Insight
+
+`app/ai_insight.py` builds a prompt from the category averages *and* every
+individual question/answer pair — not just the two averages — so the model
+has something concrete to point to instead of inventing generic advice.
+Each category's average is also classified into a tier (Strong / Average /
+Needs Improvement, via `scoring.classify_tier`) so the model judges each
+category on its own standing, not only on the gap between the two — a solid
+4.2 shouldn't get flagged as "needing work" just because the other category
+scored higher. The system prompt requires strict JSON output, forbids
+phrases like "practice more," and forbids writing the literal tier label
+words in the output (the tier only shapes tone/severity, never appears
+verbatim in the sentence shown to the user).
 
 ### Example prompt (system message)
 
@@ -121,50 +135,71 @@ never appears verbatim). The call chain is:
 > format, or exercise for the weaker category and must not say generic
 > things like "practice more."
 
+### Provider chain
+
+The brief allows a mocked response if you don't have API access; I have
+access to both, but built genuine fallback logic anyway rather than a
+single hardcoded provider, since a provider outage shouldn't take the whole
+feature down:
+
+1. **Gemini**, if `GEMINI_API_KEY` is set in `.env`.
+2. **Groq**, if Gemini's key is missing, the call fails for any reason
+   (network, auth, quota), or the response is truncated by the output token
+   limit.
+3. A **deterministic mocked response**, clearly labeled `[MOCKED]` both in
+   the JSON payload and in the UI, if neither provider is configured or both
+   fail. This means the app always returns a usable result, and the real
+   integration path (prompt building, request shape, response parsing) is
+   exercised even without live credentials — this is the "write the function
+   that would make the real call, but have it call a mocked response
+   instead" path the brief describes, kept in place as a genuine fallback
+   rather than removed once real keys were added.
+
 ---
 
 ## What I skipped, and why
 
 - **No database.** Not required by the brief; quiz state lives entirely in
-  browser memory for the duration of one session.
-- **No CI pipeline.** Given more time I'd add a GitHub Actions workflow
-  running `pytest` on every push — straightforward, just cut for time.
-- **No production WSGI entry point.** The app runs via `python app.py` for
-  development. A `wsgi.py` + gunicorn setup would be the natural next step
-  before a real deployment, but it's cut from this submission since it
-  wasn't required by the brief.
-- **No live integration test against the real Gemini/Groq APIs.** The test
-  suite mocks both providers so it's deterministic and doesn't burn API
-  quota on every run. I manually verified the real call paths once against
-  live keys during development instead of baking that into the automated
-  suite.
+  browser memory (plus a signed session cookie server-side, to remember
+  which 8 questions were shown) for the duration of one attempt.
+- **No automated test suite or CI pipeline.** Given more time I'd add unit
+  tests for `scoring.py` and the provider fallback chain in `ai_insight.py`
+  (mocking Gemini/Groq so tests stay deterministic and don't burn API
+  quota), plus a GitHub Actions workflow to run them on every push. For now
+  the app has been verified manually end-to-end, including against live
+  Gemini and Groq keys.
+- **No production WSGI entry point or deployment.** Not required by the
+  brief. The app runs via `python app.py` for development only.
 - **No second-pass quality check on the AI's output** (see Part 3, Q2) —
   right now a response can be structurally valid JSON but still vague, and
   nothing catches that automatically yet.
 - **In-memory rate limiting** (Flask-Limiter's default storage) — fine for a
-  single dev/demo process, but doesn't coordinate across multiple gunicorn
-  workers or multiple instances. Flagged in code comments and in Part 3, Q1.
+  single dev/demo process, but doesn't coordinate across multiple workers or
+  instances. Flagged in code comments and in Part 3, Q1.
+- **Not every edge case is handled** — e.g., a browser with cookies fully
+  disabled would lose the session-based "which questions were shown"
+  tracking on `/api/submit` and see a "please reload" message rather than a
+  graceful automatic recovery.
 
 ---
 
-## Part 3 — Written answers
+## Part 3 — Written Explanation
 
 ### 1. What would break first at 1,000 concurrent users, and what's the smallest fix?
 
 The first thing to fall over is almost certainly **the AI call blocking a
-whole gunicorn worker for its full duration**. Gunicorn's default sync
-worker handles one request at a time; a Gemini or Groq call can easily take
-1-3+ seconds. With a handful of workers, a burst of concurrent `/api/submit`
-requests queues up fast and users start seeing timeouts, even though the
-actual CPU work (scoring, JSON parsing) is trivial — the bottleneck is
-workers sitting idle waiting on a network response.
+whole server worker for its full duration**. A typical sync WSGI worker
+handles one request at a time; a Gemini or Groq call can easily take
+1-3+ seconds. With a handful of workers, a burst of concurrent
+`/api/submit` requests queues up fast and users start seeing timeouts, even
+though the actual CPU work (scoring, JSON parsing) is trivial — the
+bottleneck is workers sitting idle waiting on a network response.
 
-The smallest fix is a **config change, not a code change**: switch gunicorn
-to a worker class built for blocking I/O (`gevent` or `gthread`) and raise
-the worker/thread count, e.g. `gunicorn -k gthread -w 4 --threads 8 -b
-0.0.0.0:8000 <entry_module>:app` (once a WSGI entry point exists). That lets
-each process hold many in-flight AI calls instead of one, with no
-application code touched.
+The smallest fix is a **deployment/config change, not a code change**:
+run behind a WSGI server using a worker class built for blocking I/O
+(e.g. gunicorn with `gthread` or `gevent` workers) and raise the
+worker/thread count. That lets each process hold many in-flight AI calls
+instead of one, with no application code touched.
 
 The second thing to break, slightly after that, is the **in-memory rate
 limiter** — its counters live per-process, so with multiple workers the
