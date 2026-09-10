@@ -35,9 +35,6 @@ def test_pick_random_questions_is_deterministic_with_a_seeded_rng():
 
 
 def test_pick_random_questions_varies_across_different_seeds():
-    """Not guaranteed mathematically for any two seeds, but with an 8-choose-4
-    pool per category this is overwhelmingly likely to differ and catches a
-    regression to a hardcoded/non-random selection."""
     results = {
         tuple(q["id"] for q in pick_random_questions(rng=random.Random(seed)))
         for seed in range(10)

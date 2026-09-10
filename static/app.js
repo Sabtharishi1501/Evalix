@@ -18,8 +18,8 @@ const SCALE_LABELS = ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Stro
 const state = {
   questions: [],
   categories: [],
-  answers: {}, // { [questionId]: 1-5 } -- accumulates across all sections
-  sectionIndex: 0, // which category (index into state.categories) is showing
+  answers: {},
+  sectionIndex: 0,
 };
 
 const el = {
@@ -51,13 +51,7 @@ async function init() {
   await loadQuestions();
 }
 
-/**
- * Fetches a fresh, randomly-sampled set of questions from the server (the
- * server also records which ids it sent in this browser's session cookie,
- * so /api/submit can validate against exactly what was shown). Called on
- * first load AND every time "Retake the quiz" is clicked, so each attempt
- * can genuinely show a different 4-of-8 selection per category.
- */
+
 async function loadQuestions() {
   try {
     const data = await fetchJSON("/api/questions");
@@ -84,10 +78,7 @@ function questionsForCategory(category) {
   return state.questions.filter((q) => q.category === category);
 }
 
-/**
- * Renders only the CURRENT section's category and its questions, updates
- * the "Section X of Y" label, and refreshes progress/button state to match.
- */
+
 function renderCurrentSection() {
   const category = currentCategory();
   const questionsInSection = questionsForCategory(category);
@@ -139,8 +130,7 @@ function renderQuestion(question) {
     input.name = question.id;
     input.value = String(value);
     input.setAttribute("aria-label", `${SCALE_LABELS[value - 1]} (${value})`);
-    // Re-check a previously chosen answer when navigating back to a
-    // section, since the DOM for it is rebuilt fresh each time.
+
     if (existingAnswer === value) {
       input.checked = true;
     }
@@ -171,11 +161,7 @@ function handleAnswerChange(questionId, value) {
   updateProgress();
 }
 
-/**
- * Progress and the Next/Submit enabled state are both scoped to the
- * CURRENT section only -- you don't need every category answered to
- * advance past section 1, just that section's own questions.
- */
+
 function updateProgress() {
   const questionsInSection = questionsForCategory(currentCategory());
   const answeredInSection = questionsInSection.filter((q) => state.answers[q.id] !== undefined).length;
@@ -275,12 +261,6 @@ function showResultsView() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-/**
- * Starts an entirely new attempt: fetches a fresh random 4-per-category
- * selection from the server (not just resetting local answers to the same
- * old questions), resets the form and section index, and switches back to
- * the quiz view.
- */
 async function startNewQuiz() {
   hideError();
   el.submitBtn.textContent = "See my results";

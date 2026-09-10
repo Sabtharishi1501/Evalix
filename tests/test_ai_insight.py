@@ -14,7 +14,6 @@ def test_build_user_prompt_includes_scores_and_question_text():
     assert "Communication" in prompt
     assert "Problem-Solving" in prompt
     assert "4.50" in prompt or "4.5" in prompt
-    # A specific question's text should be present, not just the raw number
     assert QUESTIONS[0]["text"] in prompt
 
 

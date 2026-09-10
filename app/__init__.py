@@ -9,14 +9,10 @@ from flask import Flask, jsonify, request, send_from_directory
 
 from .config import get_config
 
-# static/ now lives at the project root (Evalix/static), one level above the
-# app/ package (Evalix/app/__init__.py) -> go up one directory to find it.
 STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static")
 
 
 def create_app(config_name=None):
-    # static_url_path="" serves everything in STATIC_DIR at the root, e.g.
-    # static/style.css -> GET /style.css, static/app.js -> GET /app.js.
     app = Flask(__name__, static_folder=STATIC_DIR, static_url_path="")
     app.config.from_object(get_config(config_name)())
 
@@ -30,8 +26,6 @@ def create_app(config_name=None):
 
     @app.get("/")
     def index():
-        # index.html is a plain static file now (no Jinja templates/ folder),
-        # so it's served as-is rather than rendered.
         return send_from_directory(app.static_folder, "index.html")
 
     @app.errorhandler(404)

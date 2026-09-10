@@ -20,8 +20,6 @@ def test_calculate_scores_averages_per_category():
 
 def test_calculate_scores_rounds_to_two_decimals():
     answers = make_full_answers()
-    # Give Communication a mix that doesn't divide evenly: 5,5,4,4 -> 4.5 (fine),
-    # try a case that needs rounding instead: 5,5,5,4 -> 4.75
     comm_ids = [q["id"] for q in QUESTIONS if q["category"] == "Communication"]
     answers[comm_ids[0]] = 5
     answers[comm_ids[1]] = 5
@@ -61,7 +59,7 @@ def test_validate_answers_rejects_unknown_question_id():
 
 def test_validate_answers_accepts_well_formed_input():
     answers = make_full_answers()
-    validate_answers(answers, QUESTIONS)  # should not raise
+    validate_answers(answers, QUESTIONS)
 
 
 def test_stronger_weaker_category():

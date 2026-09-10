@@ -16,9 +16,6 @@ logger = logging.getLogger(__name__)
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b")
 
-# Generous on purpose: thinking/reasoning tokens are drawn from this same
-# budget before the model writes the actual JSON answer, so a tight limit
-# (e.g. 300) can starve the real output even with thinking turned down.
 MAX_OUTPUT_TOKENS = 800
 
 SYSTEM_PROMPT = """You are a concise, honest career-development coach reviewing a \
@@ -142,7 +139,7 @@ def _mock_response(category_scores):
 
 
 def _parse_and_validate(raw_text):
-    data = json.loads(raw_text)  # raises json.JSONDecodeError if malformed
+    data = json.loads(raw_text)
 
     if "stronger_category_sentence" not in data or "improvement_suggestion" not in data:
         raise ValueError(f"AI response missing expected keys: {data!r}")
@@ -168,11 +165,8 @@ def _call_gemini(category_scores, answers, questions, api_key):
             response_mime_type="application/json",
             max_output_tokens=MAX_OUTPUT_TOKENS,
             temperature=0.4,
-            # gemini-3.x models think by default (thinking_level="medium"),
-            # and thinking tokens are billed/counted as output tokens. We
-            # don't need deep reasoning for a one-sentence style output, so
-            # keep it low and leave the token budget for the actual answer.
             thinking_config=types.ThinkingConfig(thinking_level="low"),
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         ),
     )
 
@@ -199,10 +193,6 @@ def _call_groq(category_scores, answers, questions, api_key):
         max_tokens=MAX_OUTPUT_TOKENS,
         temperature=0.4,
         response_format={"type": "json_object"},
-        # openai/gpt-oss-* models reason by default (reasoning_effort=
-        # "medium"), and reasoning tokens are drawn from the same
-        # max_tokens budget as the actual answer. Turn it down for this
-        # simple, short-output task.
         reasoning_effort="low",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},

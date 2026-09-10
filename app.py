@@ -1,18 +1,15 @@
 """
 Local development entry point.
-
     python run.py
-
-For production, use wsgi.py with a real WSGI server (see README).
 """
 
 import os
 
 from dotenv import load_dotenv
 
-load_dotenv()  # loads .env into os.environ if present, before create_app reads config
+load_dotenv()
 
-from app import create_app  # noqa: E402  (import after load_dotenv on purpose)
+from app import create_app 
 
 app = create_app("development")
 

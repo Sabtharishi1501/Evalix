@@ -11,17 +11,12 @@ from collections import defaultdict
 MIN_SCALE = 1
 MAX_SCALE = 5
 
-# Score-tier thresholds, independent of how the two categories compare to
-# each other. A 3.5 in one category is "Average" whether the other category
-# scored 2.0 or 4.5 -- the tier describes the score on its own terms.
 TIER_STRONG = "Strong"
 TIER_AVERAGE = "Average"
 TIER_NEEDS_IMPROVEMENT = "Needs Improvement"
 
-STRONG_THRESHOLD = 4.0  # score >= this -> Strong
-AVERAGE_THRESHOLD = 3.0  # this <= score < STRONG_THRESHOLD -> Average
-# score < AVERAGE_THRESHOLD -> Needs Improvement
-
+STRONG_THRESHOLD = 4.0 
+AVERAGE_THRESHOLD = 3.0  
 
 def classify_tier(score):
     """

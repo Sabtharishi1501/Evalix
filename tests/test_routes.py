@@ -8,10 +8,7 @@ def client(monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)  # force mock mode, deterministic
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
     app = create_app("testing")
-    # Flask/Werkzeug's test client keeps a cookie jar across requests made
-    # from the same client object by default, so the session cookie set by
-    # GET /api/questions is automatically sent on the following POST
-    # /api/submit -- no explicit session_transaction() needed.
+
     return app.test_client()
 
 
@@ -39,10 +36,6 @@ def test_get_questions_returns_8_questions_two_categories(client):
 
 
 def test_get_questions_returns_a_random_subset_of_the_pool():
-    """Not a strict guarantee of randomness (that would be flaky), but
-    confirms the endpoint is sampling from a larger pool rather than always
-    returning the same fixed 8 -- calling it many times should surface more
-    than 4 distinct Communication question ids across attempts."""
     from app import create_app
 
     app = create_app("testing")
@@ -59,8 +52,6 @@ def test_get_questions_returns_a_random_subset_of_the_pool():
 
 
 def test_submit_without_prior_get_returns_400(client):
-    """Submitting cold, with no session established by a prior GET
-    /api/questions, must be rejected -- there's nothing to validate against."""
     resp = client.post("/api/submit", json={"answers": {"comm_1": 4}})
     assert resp.status_code == 400
     assert "No active quiz found" in resp.get_json()["error"]
@@ -93,9 +84,6 @@ def test_submit_out_of_range_answer_returns_400(client):
 
 
 def test_submit_answer_for_question_outside_this_session_returns_400(client):
-    """An id that's a real question in the pool, but wasn't part of THIS
-    session's sampled 8, must be rejected as unknown -- proves scoring is
-    scoped to what was actually shown, not the whole pool."""
     data = get_questions(client)
     answers = full_valid_answers(data["questions"])
 
