@@ -5,7 +5,7 @@ an AI provider to generate one honest, specific insight: which category
 you're stronger in, and one concrete way to improve the weaker one.
 
 This README follows the structure of the assignment brief directly, so each
-section below maps to Part 1 / Part 2 / Part 3 as given.
+section below maps to Part 1 / Part 2 / Part 3 as given. 
 
 ---
 
@@ -137,10 +137,9 @@ verbatim in the sentence shown to the user).
 
 ### Provider chain
 
-The brief allows a mocked response if you don't have API access; I have
-access to both, but built genuine fallback logic anyway rather than a
-single hardcoded provider, since a provider outage shouldn't take the whole
-feature down:
+The brief allows a mocked response if you don't have API access; I have access to both,
+but built genuine fallback logic anyway rather than a single hardcoded provider,
+since a provider outage shouldn't take the whole feature down:
 
 1. **Gemini**, if `GEMINI_API_KEY` is set in `.env`.
 2. **Groq**, if Gemini's key is missing, the call fails for any reason

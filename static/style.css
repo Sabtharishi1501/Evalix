@@ -256,7 +256,6 @@ body {
   color: var(--ink-soft);
   font-style: italic;
 }
-
 /* ---------- Utility ---------- */
 
 .hidden { display: none !important; }
