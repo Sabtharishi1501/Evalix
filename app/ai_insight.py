@@ -212,13 +212,13 @@ def _call_groq(category_scores, answers, questions, api_key):
 
 
 def generate_insight(category_scores, answers, questions):
-    """
+    """ 
     Return {"stronger_category_sentence": str, "improvement_suggestion": str}.
 
     Tries Gemini first, falls back to Groq on any failure (including hitting
     the token limit), and falls back to a mocked response if neither
     provider is configured or both fail — so the quiz always returns a result.
-    """
+    """ 
     gemini_key = os.environ.get("GEMINI_API_KEY")
     groq_key = os.environ.get("GROQ_API_KEY")
 
