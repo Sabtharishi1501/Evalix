@@ -8,7 +8,7 @@ test and safe to reuse (e.g. from a CLI or a batch job) later.
 
 from collections import defaultdict
 
-MIN_SCALE = 1
+MIN_SCALE = 1 
 MAX_SCALE = 5
 
 TIER_STRONG = "Strong"

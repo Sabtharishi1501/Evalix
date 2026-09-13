@@ -62,3 +62,4 @@ def submit():
         }
 
     return jsonify({"scores": scores, "insight": insight})
+
